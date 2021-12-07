@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { kultur_tanah, jumlah_kamar, luas_parkiran, spek_bangunan, design } from '../data/data.js'
+import { validationResult } from 'express-validator'
 
 const style = [
     [1 / 1, 1 / 4, 4 / 1, 1 / 6],
@@ -75,6 +76,10 @@ const indexOfMax = (arr) => {
 }
 
 export const calculate = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).send(errors);
+    }
     const currentData = JSON.parse(fs.readFileSync('./data.json'))
 
     const lahan_kamar = req.body.lahan_kamar
@@ -103,13 +108,7 @@ export const calculate = (req, res) => {
     const luasParkiran = calculateEigenvector(luas_parkiran)
     const spekBangunan = calculateEigenvector(spek_bangunan)
 
-    console.table(normalitation)
-    console.table(kulturTanah)
-    console.table(jumlahKamar)
-    console.table(luasParkiran)
-    console.table(spekBangunan)
-
-    const car = [
+    const house = [
         [kulturTanah[0], jumlahKamar[0], luasParkiran[0], spekBangunan[0]],
         [kulturTanah[1], jumlahKamar[1], luasParkiran[1], spekBangunan[1]],
         [kulturTanah[2], jumlahKamar[2], luasParkiran[2], spekBangunan[2]],
@@ -119,10 +118,10 @@ export const calculate = (req, res) => {
         [kulturTanah[6], jumlahKamar[6], luasParkiran[6], spekBangunan[6]],
         [kulturTanah[7], jumlahKamar[7], luasParkiran[7], spekBangunan[7]],
     ]
-    const final = multiplyFinal(car, normalitation)
+    const final = multiplyFinal(house, normalitation)
     const finalIndex = indexOfMax(final)
     const responseData = {
-        name: '',
+        name: req.body.name,
         first_recomendation: design[finalIndex[0]],
         second_recomendation: design[finalIndex[1]]
     }
